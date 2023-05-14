@@ -1,13 +1,6 @@
-"use client";
 import React, { useState, useEffect } from "react";
-import { Select } from "./app/components/Select/Select";
-import { HorisontalArrow } from "./app/components/Icons/HorisontalArrow";
-import { ClearIcon } from "./app/components/Icons/ClearIcon";
-//List of available currencies; https://api.changenow.io/v1/currencies?active=true&fixedRate=true
-//Minimal exchange amount; https://api.changenow.io/v1/min-amount/:from_to?api_key=your_api_key
-//Estimated exchange amount https://api.changenow.io/v1/exchange-amount/:send_amount/:from_to/?api_key=your_api_key
 
-export const ExchangeWidget = () => {
+export const useLogic = () => {
   const apiKey = process.env.API_KEY;
   const [currencies, setCurrencies] = useState([]);
   const [sourceResults, setSourceResults] = useState([]);
@@ -16,13 +9,14 @@ export const ExchangeWidget = () => {
   const [targetCurrency, setTargetCurrency] = useState("");
   const [sourceAmount, setSourceAmount] = useState(0);
   const [targetAmount, setTargetAmount] = useState("");
+  const [sourceMinAmount, setSourceMinAmount] = useState(0);
   const [searchVal, onChangeSearch] = useState({ source: "", target: "" });
   const [errorMessage, setErrorMessage] = useState("");
+  const [disabledPair, setDisabledPair] = useState(false);
   useEffect(() => {
     fetchCurrencies();
   }, []);
-
-  // функцию не выношу за пределы компонента - чтобы не передавать 3 дополнительных аргумента, а брать их сразу из области видимости (обсуждаемо)
+  // функцию не выношу за пределы хука - чтобы не передавать 3 дополнительных аргумента, а брать их сразу из области видимости (обсуждаемо)
   // функция может быть сильно проще и читаемей, но я хочу использовать ранний выход из цикла, если мы нашли 3
   // (максимум в нашем отображении) подходящих монеты. плюс к этому - если в одном из инпутов выбрана монета - её по дефолту
   // не отображается в другом инпуте (но её всё ещё можно найти по прямому поиску текстом)
@@ -72,8 +66,9 @@ export const ExchangeWidget = () => {
 
   useEffect(() => {
     if (!sourceCurrency || !targetCurrency || !sourceAmount) return;
+    if (sourceAmount < sourceMinAmount) return;
     updateTargetAmount();
-  }, [sourceCurrency, targetCurrency, sourceAmount]);
+  }, [sourceCurrency, targetCurrency, sourceAmount, sourceMinAmount]);
 
   const updateTargetAmount = async () => {
     try {
@@ -81,11 +76,24 @@ export const ExchangeWidget = () => {
         `https://api.changenow.io/v1/exchange-amount/${sourceAmount}/${sourceCurrency.ticker}_${targetCurrency.ticker}/?api_key=${apiKey}`
       );
       const data = await response.json();
+      if (data.estimatedAmount === null) {
+        setDisabledPair("This pair is disabled now");
+        return;
+      }
       setTargetAmount(data.estimatedAmount);
+      setErrorMessage("");
+      setDisabledPair("");
     } catch (error) {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (sourceMinAmount === 0 || sourceAmount === 0) return;
+    if (sourceMinAmount > sourceAmount) {
+      setErrorMessage("Amount is too small.");
+    }
+  }, [sourceMinAmount, sourceAmount]);
 
   const updateMinAmount = async () => {
     try {
@@ -93,7 +101,12 @@ export const ExchangeWidget = () => {
         `https://api.changenow.io/v1/min-amount/${sourceCurrency.ticker}_${targetCurrency.ticker}?api_key=y${apiKey}`
       );
       const data = await response.json();
+      if (data.minAmount === null) {
+        setDisabledPair("This pair is disabled now");
+        return;
+      }
       setSourceAmount(data.minAmount);
+      setSourceMinAmount(data.minAmount);
     } catch (error) {
       console.error(error);
     }
@@ -101,56 +114,26 @@ export const ExchangeWidget = () => {
 
   const onChangeSourceCurrency = (option) => {
     setSourceCurrency(option);
+    setSourceAmount(0);
   };
 
-  return (
-    <div className="widget_wrapper">
-      <h1>Crypto exchange</h1>
-      <h3>Exchange fast and easy</h3>
-      <div className="selects_wrapper">
-        <div className="select_currency">
-          <Select
-            options={sourceResults}
-            value={sourceCurrency}
-            onChange={onChangeSourceCurrency}
-            amount={sourceAmount}
-            onChangeAmount={setSourceAmount}
-            searchVal={searchVal.source}
-            onChangeSearch={(val) =>
-              onChangeSearch((prev) => ({ ...prev, source: val }))
-            }
-          />
-        </div>
-        <div className="exchange_arrows_wrapper">
-          <HorisontalArrow />
-          <HorisontalArrow reverse />
-        </div>
-        <div className="select_currency">
-          <Select
-            options={targetResults}
-            value={targetCurrency}
-            onChange={setTargetCurrency}
-            amount={targetAmount}
-            disabled
-            searchVal={searchVal.target}
-            onChangeSearch={(val) =>
-              onChangeSearch((prev) => ({ ...prev, target: val }))
-            }
-          />
-        </div>
-      </div>
-      <div className="action_wrapper">
-        <div className="address_input_wrapper">
-          <label>{`Your ${sourceCurrency.name || "wallet"} address`}</label>
-          <div className="select_wrapper">
-            <input className="transparent_input" type="text" />
-          </div>
-        </div>
-        <button className="exchange_button" onClick={() => console.log(1)}>
-          EXCHANGE
-        </button>
-      </div>
-      {errorMessage && <p>{errorMessage}</p>}
-    </div>
-  );
+  const onChangeTargetCurrency = (option) => {
+    setTargetCurrency(option);
+    setSourceAmount(0);
+  };
+  return {
+    sourceResults,
+    sourceCurrency,
+    onChangeSourceCurrency,
+    sourceAmount,
+    setSourceAmount,
+    searchVal,
+    onChangeSearch,
+    errorMessage,
+    targetResults,
+    targetCurrency,
+    onChangeTargetCurrency,
+    targetAmount,
+    disabledPair,
+  };
 };

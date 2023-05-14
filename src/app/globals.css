@@ -1,3 +1,15 @@
+:root {
+  --brand-color: #137e6e;
+  --dark-gray: #282828;
+  --light-gray: #80a2b6;
+  --background: white;
+  --warning: red;
+  --input_background: #f6f7f8;
+  --input_border: #c1d9e6;
+  --input_accent_border: #e3ebef;
+  --main_action: #11b3fe;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -9,16 +21,7 @@ body {
   font-family: Arial;
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--background);
 }
 
 a {
@@ -27,8 +30,9 @@ a {
 }
 
 .widget_wrapper {
+  background: var(--background);
   max-width: 1000px;
-  padding: 40px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -49,9 +53,9 @@ a {
 
 .action_wrapper {
   display: flex;
-  justify-content: start;
-  align-items: end;
-  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-end;
+  gap: 56px;
   padding-top: 60px;
   @media (max-width: 1000px) {
     flex-direction: column;
@@ -61,11 +65,11 @@ a {
 .select_wrapper {
   height: 50px;
   min-width: 440px;
-  background: #f6f7f8;
+  background: var(--input_background);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #c1d9e6;
+  border: 1px solid var(--input_border);
   border-radius: 5px;
   position: relative;
   @media (max-width: 1000px) {
@@ -102,12 +106,12 @@ a {
 
 .currency_info_wrapper {
   height: 30px;
-  border-left: 1px solid #e3ebef;
+  border-left: 1px solid var(--input_accent_border);
   display: flex;
   gap: 10px;
   align-items: center;
   padding-left: 15px;
-  color: #282828;
+  color: var(--dark-gray);
 }
 
 .select_left_part {
@@ -128,9 +132,9 @@ a {
   top: 49px;
   right: -1px;
   cursor: pointer;
-  background: #f6f7f8;
-  border: 1px solid #c1d9e6;
-  border-top: 1px solid #e3ebef;
+  background: var(--input_background);
+  border: 1px solid var(--input_border);
+  border-top: 1px solid var(--input_accent_border);
   border-radius: 5px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -138,6 +142,7 @@ a {
   box-sizing: content-box;
   transition: max-height 0.3s ease;
 }
+
 .dropdown_list_wrapper.dropdown_closed {
   max-height: 0;
   overflow: hidden;
@@ -152,7 +157,7 @@ a {
   display: flex;
   gap: 16px;
   align-items: center;
-  color: #80a2b6;
+  color: var(--light-gray);
 }
 
 .transparent_input {
@@ -168,13 +173,12 @@ a {
   margin-left: 16px;
   display: flex;
   align-items: center;
-
-  color: #282828;
+  color: var(--dark-gray);
   padding: 5px;
 }
 
 .transparent_input::placeholder {
-  color: #80a2b6;
+  color: var(--light-gray);
 }
 
 input::-webkit-outer-spin-button,
@@ -192,9 +196,10 @@ input[type="text"] {
 }
 
 .exchange_button {
+  position: relative;
   width: 205px;
   height: 50px;
-  background: #11b3fe;
+  background: var(--main_action);
   border-radius: 5px;
   color: white;
   border: none;
@@ -204,8 +209,25 @@ input[type="text"] {
   }
 }
 
+.exchange_button:disabled {
+  background: var(--main_action);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.exchange_button:not(:disabled):active {
+  box-shadow: 0 0 4px 2px rgba(17, 179, 254, 0.5);
+}
+
 .address_input_wrapper {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addres_input_wrapper label {
+  margin-bottom: 8px;
 }
 
 h1 {
@@ -215,12 +237,42 @@ h1 {
   line-height: 120%;
 }
 
+h3 {
+  padding-top: 16px;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+h1,
+h3,
+label {
+  color: var(--dark-gray);
+}
+
 .exchange_arrows_wrapper {
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 16px;
   @media (max-width: 1000px) {
-    align-items: end;
+    align-items: flex-end;
+    transform: rotate(90deg);
+    margin-left: auto;
   }
+}
+
+.error_message {
+  padding: 5px;
+  color: var(--warning);
+  position: absolute;
+  bottom: -30px;
+}
+
+.invalid_dash {
+  width: 39px;
+  height: 1px;
+  border: 1px solid var(--light-gray);
+  margin-top: 25px;
+  margin-left: 16px;
 }

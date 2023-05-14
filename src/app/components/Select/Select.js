@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { ArrowIcon } from "../Icons/ArrowIcon";
 import { DropdownList } from "./DropdownList";
 import { CurrencyInfo } from "./CurrencyInfo";
-import { ClearIcon } from "../Icons/ClearIcon";
+import { ClearIcon } from "./ClearIcon";
 import { SearchBar } from "./SearchBar";
 
 export const Select = ({
+  children,
   options,
   value,
   onChange,
@@ -14,6 +15,7 @@ export const Select = ({
   disabled,
   searchVal,
   onChangeSearch,
+  isInvalid,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleToggle = () => {
@@ -37,12 +39,18 @@ export const Select = ({
           />
         )}
         {!isOpen && value && (
-          <SearchBar
-            value={amount}
-            onChange={onChangeAmount}
-            type={"number"}
-            disabled={disabled}
-          />
+          <>
+            {isInvalid ? (
+              <div className="invalid_dash" />
+            ) : (
+              <SearchBar
+                value={amount}
+                onChange={onChangeAmount}
+                type={"number"}
+                disabled={disabled}
+              />
+            )}
+          </>
         )}
       </div>
       <div className="select_left_part">
@@ -58,6 +66,7 @@ export const Select = ({
         value={value}
         closed={!isOpen}
       />
+      {children}
     </div>
   );
 };
